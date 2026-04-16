@@ -19,7 +19,7 @@
 
 *Experience our data live. Tap the links below to interact with the 3D models and custom charting tools.*
 
-* 🚀 [**Phase 1: Acoustic Length Optimization Heatmap**](Ricardo%20Wave%20Length%20Simulation%20Results.html)
+* 🚀 [**Phase 1: Acoustic Length Optimization Heatmap**](Length%20Simulation%20Results.html)
 
 * 📈 [**Phase 2: Final Geometry Performance Data**](Design%20Comparison%20Charts.html)
 
@@ -103,6 +103,3 @@
 
 <hr>
 <p align="center"><i>University of Illinois Chicago (UIC) • MIE 397 Senior Design Expo</i></p>
-*(Click our names below to connect with us on LinkedIn!)*
-**Team Members:**
-* [Jacob Schifrin](https://www.linkedin.com/in/jacobschifrin)
