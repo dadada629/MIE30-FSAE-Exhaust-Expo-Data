@@ -1,5 +1,13 @@
 # UIC FSAE Exhaust System Data
-*Team 30 Jacob Schifrin, Aiden Avalos, Michal Potok, Eduardo Escobar, Thomas Dicke*
+*Team 30 Powertrain Engineering*
+
+*(Click our names below to connect with us on LinkedIn!)*
+**Team Members:**
+* [Jacob Schifrin](https://www.linkedin.com/in/jacobschifrin)
+* [Aiden Avalos](https://www.linkedin.com/in/aiden-avalos-279285220/)
+* [Michal Potok](https://www.linkedin.com/in/michal-potok-86bb84227/)
+* [Eduardo Escobar](https://www.linkedin.com/in/eduardo-escobar-1469ba21a/)
+* [Thomas Dicke](https://www.linkedin.com/in/thomas-dicke-93599524b/)
 
 Welcome to our interactive data dashboard. Select a link below to view the interactive simulation telemetry, or scroll down to view our structural, thermal, and flow validations.
 
