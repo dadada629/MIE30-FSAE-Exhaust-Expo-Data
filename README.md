@@ -12,7 +12,7 @@
 Welcome to our interactive data dashboard. Select a link below to view the interactive simulation telemetry, or scroll down to view our structural, thermal, and flow validations.
 
 ## 📊 Interactive Telemetry
-* [Phase 1: Acoustic Length Optimization Heatmap](Ricardo%20Wave%20Length%20Simulation%20Results.html)
+* [Phase 1: Acoustic Length Optimization Heatmap](Length%20Simulation%20Results.html)
 * [Phase 2: Final Geometry Performance Data](Design%20Comparison%20Charts.html)
 
 ---
