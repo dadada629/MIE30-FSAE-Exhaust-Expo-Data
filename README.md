@@ -8,10 +8,7 @@
 
 *Click our names to connect with us on LinkedIn!*
 
-|  |  |  | 
- | ----- | ----- | ----- | 
-| [**Jacob Schifrin**](https://www.linkedin.com/in/jacobschifrin) | [**Aiden Avalos**](https://www.linkedin.com/in/aiden-avalos-279285220/) | [**Michal Potok**](https://www.linkedin.com/in/michal-potok-86bb84227/) | 
-| [**Eduardo Escobar**](https://www.linkedin.com/in/eduardo-escobar-1469ba21a/) | [**Thomas Dicke**](https://www.linkedin.com/in/thomas-dicke-93599524b/) |  | 
+| [**Jacob Schifrin**](https://www.linkedin.com/in/jacobschifrin) | [**Aiden Avalos**](https://www.linkedin.com/in/aiden-avalos-279285220/) | [**Michal Potok**](https://www.linkedin.com/in/michal-potok-86bb84227/) | [**Eduardo Escobar**](https://www.linkedin.com/in/eduardo-escobar-1469ba21a/) | [**Thomas Dicke**](https://www.linkedin.com/in/thomas-dicke-93599524b/) |
 
 ## 📊 Interactive Telemetry Dashboards
 
