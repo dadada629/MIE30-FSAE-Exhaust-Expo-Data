@@ -18,6 +18,11 @@
             --highlight: #4ade80;
         }
 
+        /* --- CRITICAL RESPONSIVE FIXES ADDED HERE --- */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg-color);
@@ -25,14 +30,34 @@
             margin: 0;
             padding: 24px;
             line-height: 1.5;
+            overflow-x: hidden; /* Failsafe to prevent horizontal scroll on mobile */
         }
+
+        /* Navigation Button */
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+        .btn-home:hover { background-color: var(--border-color); }
+        .btn-home span { margin-right: 6px; }
 
         .header { text-align: center; margin-bottom: 32px; }
         .header h1 { margin: 0 0 8px 0; font-size: 2rem; font-weight: 700; }
 
         .grid-3 {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            /* Updated to use min(100%, 300px) so cards shrink on very small phones instead of overflowing */
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
             gap: 20px;
             margin-bottom: 24px;
         }
@@ -79,6 +104,7 @@
             padding: 20px;
             height: 400px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%; /* Ensures chart box obeys flex/grid limits */
         }
 
         .chart-box.full-width {
@@ -93,6 +119,7 @@
             margin-bottom: 15px;
             padding-bottom: 15px;
             border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap; /* Allows components to wrap safely on mobile */
         }
         
         .control-group {
@@ -104,10 +131,12 @@
         .control-group label {
             font-size: 0.9rem;
             color: var(--text-muted);
+            white-space: nowrap; /* Prevents label text from breaking */
         }
         
         input[type="range"] {
             width: 150px;
+            max-width: 100%;
         }
         
         .range-val {
@@ -116,15 +145,30 @@
             font-variant-numeric: tabular-nums;
         }
 
+        /* --- Modern Mobile Media Queries --- */
         @media (max-width: 1024px) {
             .charts-grid { grid-template-columns: 1fr; }
-            .chart-box.full-width { grid-column: auto; }
-            .controls-container { flex-direction: column; align-items: flex-start; }
+            .chart-box.full-width { grid-column: auto; height: 400px; }
+            .controls-container { flex-direction: column; align-items: stretch; }
+            .control-group { width: 100%; justify-content: space-between; }
+            input[type="range"] { flex-grow: 1; margin: 0 10px; width: auto; }
         }
 
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .header h1 { font-size: 1.5rem; }
+            .stat-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+            .chart-box { height: 350px; padding: 12px; }
+            .chart-box.full-width { height: 350px; }
+            #reset-btn { width: 100%; padding: 12px; margin-top: 8px; }
+        }
     </style>
 </head>
 <body>
+
+    <a href="https://dadada629.github.io/MIE30-FSAE-Exhaust-Expo-Data/" class="btn-home">
+        <span>←</span> Back to Dashboard
+    </a>
 
     <div class="header">
         <h1>F26 Exhaust Telemetry Dashboard</h1>
