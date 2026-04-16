@@ -1,5 +1,3 @@
-# UIC FSAE Exhaust System Data
-*Team 30 Powertrain Engineering*
 <div align="center">
 <h1>🏁 UIC FSAE Exhaust System Data</h1>
 <h3>Team 30 Powertrain Engineering Dashboard</h3>
