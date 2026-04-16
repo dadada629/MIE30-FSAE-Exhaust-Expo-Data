@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F26 Exhaust Telemetry Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --d1-color: #38bdf8; 
+            --d2-color: #fb923c; 
+            --d3-color: #a78bfa; 
+            --border-color: #334155;
+            --highlight: #4ade80;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+            line-height: 1.5;
+        }
+
+        .header { text-align: center; margin-bottom: 32px; }
+        .header h1 { margin: 0 0 8px 0; font-size: 2rem; font-weight: 700; }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border-color);
+            font-size: 0.95rem;
+        }
+        .stat-row:last-child { border: none; }
+        .stat-label { color: var(--text-muted); }
+        .stat-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+        .best-val { color: var(--highlight); }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            height: 400px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-box.full-width {
+            grid-column: 1 / -1;
+            height: 450px;
+        }
+        
+        .controls-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-group label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        input[type="range"] {
+            width: 150px;
+        }
+        
+        .range-val {
+            min-width: 40px;
+            font-size: 0.9rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        @media (max-width: 1024px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            .chart-box.full-width { grid-column: auto; }
+            .controls-container { flex-direction: column; align-items: flex-start; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>F26 Exhaust Telemetry Dashboard</h1>
+        <p style="color: var(--text-muted); margin: 0;">Post-Collector Update | Adjustable 1000-12000 RPM Sweep</p>
+    </div>
+
+    <!-- Top Level Metrics -->
+    <div class="grid-3">
+        <!-- D1 -->
+        <div class="card">
+            <div class="card-header" style="color: var(--d1-color);">Design 1</div>
+            <div class="stat-row"><span class="stat-label">Target Zone (4500-5000) Avg</span><span class="stat-val best-val" id="d1-avg"></span></div>
+            <div class="stat-row"><span class="stat-label">Total Torque Area (AUC)</span><span class="stat-val best-val" id="d1-auc"></span></div>
+            <div class="stat-row"><span class="stat-label">Peak Torque</span><span class="stat-val" id="d1-pt"></span></div>
+            <div class="stat-row"><span class="stat-label">Peak Power</span><span class="stat-val best-val" id="d1-pp"></span></div>
+        </div>
+
+        <!-- D2 -->
+        <div class="card">
+            <div class="card-header" style="color: var(--d2-color);">Design 2</div>
+            <div class="stat-row"><span class="stat-label">Target Zone (4500-5000) Avg</span><span class="stat-val" id="d2-avg"></span></div>
+            <div class="stat-row"><span class="stat-label">Total Torque Area (AUC)</span><span class="stat-val" id="d2-auc"></span></div>
+            <div class="stat-row"><span class="stat-label">Peak Torque</span><span class="stat-val best-val" id="d2-pt"></span></div>
+            <div class="stat-row"><span class="stat-label">Peak Power</span><span class="stat-val" id="d2-pp"></span></div>
+        </div>
+
+        <!-- D3 -->
+        <div class="card">
+            <div class="card-header" style="color: var(--d3-color);">Design 3</div>
+            <div class="stat-row"><span class="stat-label">Target Zone (4500-5000) Avg</span><span class="stat-val" id="d3-avg"></span></div>
+            <div class="stat-row"><span class="stat-label">Total Torque Area (AUC)</span><span class="stat-val" id="d3-auc"></span></div>
+            <div class="stat-row"><span class="stat-label">Peak Torque</span><span class="stat-val" id="d3-pt"></span></div>
+            <div class="stat-row"><span class="stat-label">Peak Power</span><span class="stat-val" id="d3-pp"></span></div>
+        </div>
+    </div>
+
+    <!-- Interactive Controls -->
+    <div class="card" style="margin-bottom: 24px;">
+        <div class="controls-container">
+            <div class="control-group">
+                <label for="min-rpm">Min RPM:</label>
+                <input type="range" id="min-rpm" min="1000" max="11000" step="100" value="1000">
+                <span class="range-val" id="min-rpm-val">1000</span>
+            </div>
+            <div class="control-group">
+                <label for="max-rpm">Max RPM:</label>
+                <input type="range" id="max-rpm" min="2000" max="12000" step="100" value="12000">
+                <span class="range-val" id="max-rpm-val">12000</span>
+            </div>
+            <div style="flex-grow: 1;"></div>
+            <button id="reset-btn" style="padding: 8px 16px; background-color: var(--border-color); color: var(--text-main); border: none; border-radius: 4px; cursor: pointer; font-family: inherit;">Reset Range</button>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+        <div class="chart-box full-width"><canvas id="torqueChart"></canvas></div>
+        <div class="chart-box"><canvas id="powerChart"></canvas></div>
+        <div class="chart-box"><canvas id="veChart"></canvas></div>
+    </div>
+
+    <script>
+        // Parsed Data from the updated collector runs
+        const simData = {
+          Design1: [{"rpm": 1000, "torque": 32.2, "power": 4.5, "ve": 74.0}, {"rpm": 1100, "torque": 30.7, "power": 4.7, "ve": 67.4}, {"rpm": 1200, "torque": 28.2, "power": 4.8, "ve": 60.3}, {"rpm": 1300, "torque": 32.7, "power": 6.0, "ve": 68.2}, {"rpm": 1400, "torque": 36.8, "power": 7.2, "ve": 75.5}, {"rpm": 1500, "torque": 33.3, "power": 7.0, "ve": 67.0}, {"rpm": 1600, "torque": 31.6, "power": 7.1, "ve": 62.9}, {"rpm": 1700, "torque": 31.2, "power": 7.4, "ve": 61.2}, {"rpm": 1800, "torque": 30.0, "power": 7.6, "ve": 58.0}, {"rpm": 1900, "torque": 25.5, "power": 6.8, "ve": 49.4}, {"rpm": 2000, "torque": 24.9, "power": 7.0, "ve": 48.0}, {"rpm": 2100, "torque": 27.8, "power": 8.2, "ve": 52.7}, {"rpm": 2200, "torque": 31.4, "power": 9.7, "ve": 58.6}, {"rpm": 2300, "torque": 31.3, "power": 10.1, "ve": 58.1}, {"rpm": 2400, "torque": 29.5, "power": 9.9, "ve": 54.4}, {"rpm": 2500, "torque": 27.6, "power": 9.7, "ve": 50.9}, {"rpm": 2600, "torque": 27.1, "power": 9.9, "ve": 49.8}, {"rpm": 2700, "torque": 28.9, "power": 11.0, "ve": 52.5}, {"rpm": 2800, "torque": 33.2, "power": 13.1, "ve": 59.4}, {"rpm": 2900, "torque": 38.4, "power": 15.6, "ve": 67.6}, {"rpm": 3000, "torque": 43.7, "power": 18.4, "ve": 76.2}, {"rpm": 3100, "torque": 47.9, "power": 20.8, "ve": 83.1}, {"rpm": 3200, "torque": 49.4, "power": 22.2, "ve": 86.7}, {"rpm": 3300, "torque": 49.8, "power": 23.1, "ve": 88.9}, {"rpm": 3400, "torque": 50.2, "power": 24.0, "ve": 90.8}, {"rpm": 3500, "torque": 50.7, "power": 24.9, "ve": 91.4}, {"rpm": 3600, "torque": 51.5, "power": 26.1, "ve": 91.1}, {"rpm": 3700, "torque": 52.4, "power": 27.2, "ve": 91.1}, {"rpm": 3800, "torque": 53.1, "power": 28.3, "ve": 91.0}, {"rpm": 3900, "torque": 54.3, "power": 29.7, "ve": 92.4}, {"rpm": 4000, "torque": 55.2, "power": 31.0, "ve": 93.8}, {"rpm": 4050, "torque": 55.2, "power": 31.4, "ve": 93.5}, {"rpm": 4100, "torque": 54.8, "power": 31.6, "ve": 92.7}, {"rpm": 4150, "torque": 54.4, "power": 31.7, "ve": 91.7}, {"rpm": 4200, "torque": 53.8, "power": 31.7, "ve": 90.4}, {"rpm": 4250, "torque": 53.2, "power": 31.7, "ve": 89.1}, {"rpm": 4300, "torque": 52.4, "power": 31.6, "ve": 87.4}, {"rpm": 4350, "torque": 51.4, "power": 31.4, "ve": 85.5}, {"rpm": 4400, "torque": 50.4, "power": 31.1, "ve": 83.7}, {"rpm": 4450, "torque": 49.5, "power": 31.0, "ve": 82.2}, {"rpm": 4500, "torque": 48.7, "power": 30.8, "ve": 80.9}, {"rpm": 4550, "torque": 48.0, "power": 30.7, "ve": 79.6}, {"rpm": 4600, "torque": 46.8, "power": 30.2, "ve": 77.6}, {"rpm": 4650, "torque": 45.8, "power": 29.9, "ve": 76.0}, {"rpm": 4700, "torque": 45.6, "power": 30.1, "ve": 75.5}, {"rpm": 4750, "torque": 45.4, "power": 30.3, "ve": 75.2}, {"rpm": 4800, "torque": 45.7, "power": 30.8, "ve": 75.5}, {"rpm": 4850, "torque": 46.1, "power": 31.4, "ve": 76.2}, {"rpm": 4900, "torque": 46.8, "power": 32.2, "ve": 77.2}, {"rpm": 4950, "torque": 47.6, "power": 33.1, "ve": 78.3}, {"rpm": 5000, "torque": 48.4, "power": 34.0, "ve": 79.6}, {"rpm": 5100, "torque": 50.4, "power": 36.1, "ve": 82.8}, {"rpm": 5200, "torque": 52.7, "power": 38.5, "ve": 86.0}, {"rpm": 5300, "torque": 53.4, "power": 39.7, "ve": 86.8}, {"rpm": 5400, "torque": 52.1, "power": 39.5, "ve": 84.9}, {"rpm": 5500, "torque": 51.3, "power": 39.6, "ve": 83.8}, {"rpm": 5600, "torque": 50.8, "power": 40.0, "ve": 83.1}, {"rpm": 5700, "torque": 51.1, "power": 40.9, "ve": 83.5}, {"rpm": 5800, "torque": 51.8, "power": 42.2, "ve": 84.5}, {"rpm": 5900, "torque": 53.1, "power": 44.0, "ve": 86.3}, {"rpm": 6000, "torque": 54.9, "power": 46.2, "ve": 88.8}, {"rpm": 6100, "torque": 57.0, "power": 48.8, "ve": 92.0}, {"rpm": 6200, "torque": 58.8, "power": 51.2, "ve": 94.8}, {"rpm": 6300, "torque": 60.3, "power": 53.4, "ve": 97.6}, {"rpm": 6400, "torque": 61.4, "power": 55.2, "ve": 99.5}, {"rpm": 6500, "torque": 62.4, "power": 56.9, "ve": 101.0}, {"rpm": 6600, "torque": 63.1, "power": 58.5, "ve": 102.4}, {"rpm": 6700, "torque": 63.9, "power": 60.1, "ve": 103.7}, {"rpm": 6800, "torque": 64.4, "power": 61.5, "ve": 104.6}, {"rpm": 6900, "torque": 64.8, "power": 62.8, "ve": 105.1}, {"rpm": 7000, "torque": 65.0, "power": 63.9, "ve": 105.1}, {"rpm": 7100, "torque": 64.9, "power": 64.7, "ve": 104.2}, {"rpm": 7200, "torque": 64.0, "power": 64.7, "ve": 102.3}, {"rpm": 7300, "torque": 62.9, "power": 64.5, "ve": 100.3}, {"rpm": 7400, "torque": 62.4, "power": 64.8, "ve": 99.4}, {"rpm": 7500, "torque": 62.6, "power": 65.9, "ve": 99.7}, {"rpm": 7600, "torque": 63.0, "power": 67.2, "ve": 100.4}, {"rpm": 7700, "torque": 63.4, "power": 68.6, "ve": 101.1}, {"rpm": 7800, "torque": 63.8, "power": 69.9, "ve": 101.9}, {"rpm": 7900, "torque": 64.0, "power": 71.0, "ve": 102.2}, {"rpm": 8000, "torque": 64.3, "power": 72.2, "ve": 102.8}, {"rpm": 8100, "torque": 64.5, "power": 73.3, "ve": 103.3}, {"rpm": 8200, "torque": 64.7, "power": 74.5, "ve": 103.8}, {"rpm": 8300, "torque": 64.9, "power": 75.7, "ve": 104.3}, {"rpm": 8400, "torque": 65.1, "power": 76.7, "ve": 104.6}, {"rpm": 8500, "torque": 65.1, "power": 77.7, "ve": 104.7}, {"rpm": 8600, "torque": 65.0, "power": 78.6, "ve": 104.6}, {"rpm": 8700, "torque": 65.0, "power": 79.4, "ve": 104.6}, {"rpm": 8800, "torque": 65.1, "power": 80.5, "ve": 104.8}, {"rpm": 8900, "torque": 65.1, "power": 81.3, "ve": 105.0}, {"rpm": 9000, "torque": 65.0, "power": 82.2, "ve": 105.2}, {"rpm": 9100, "torque": 65.0, "power": 83.1, "ve": 105.4}, {"rpm": 9200, "torque": 65.0, "power": 84.0, "ve": 105.4}, {"rpm": 9300, "torque": 64.9, "power": 84.7, "ve": 105.2}, {"rpm": 9400, "torque": 64.9, "power": 85.6, "ve": 105.1}, {"rpm": 9500, "torque": 64.7, "power": 86.3, "ve": 105.0}, {"rpm": 9600, "torque": 64.7, "power": 87.2, "ve": 105.1}, {"rpm": 9700, "torque": 64.7, "power": 88.2, "ve": 105.3}, {"rpm": 9800, "torque": 64.4, "power": 88.7, "ve": 105.1}, {"rpm": 9900, "torque": 64.3, "power": 89.3, "ve": 104.8}, {"rpm": 10000, "torque": 63.9, "power": 89.8, "ve": 104.3}, {"rpm": 10100, "torque": 63.5, "power": 90.0, "ve": 103.6}, {"rpm": 10200, "torque": 63.0, "power": 90.2, "ve": 102.9}, {"rpm": 10300, "torque": 62.5, "power": 90.4, "ve": 102.1}, {"rpm": 10400, "torque": 61.9, "power": 90.5, "ve": 101.4}, {"rpm": 10500, "torque": 61.5, "power": 90.7, "ve": 100.9}, {"rpm": 10600, "torque": 61.1, "power": 90.9, "ve": 100.3}, {"rpm": 10700, "torque": 60.6, "power": 91.0, "ve": 99.8}, {"rpm": 10800, "torque": 60.0, "power": 91.1, "ve": 99.3}, {"rpm": 10900, "torque": 59.6, "power": 91.2, "ve": 98.9}, {"rpm": 11000, "torque": 59.0, "power": 91.2, "ve": 98.4}, {"rpm": 11100, "torque": 58.5, "power": 91.2, "ve": 98.1}, {"rpm": 11200, "torque": 58.0, "power": 91.2, "ve": 97.7}, {"rpm": 11300, "torque": 57.7, "power": 91.5, "ve": 97.8}, {"rpm": 11400, "torque": 56.8, "power": 90.9, "ve": 96.9}, {"rpm": 11500, "torque": 56.1, "power": 90.5, "ve": 96.3}, {"rpm": 11600, "torque": 55.5, "power": 90.4, "ve": 95.8}, {"rpm": 11700, "torque": 54.7, "power": 89.9, "ve": 94.8}, {"rpm": 11800, "torque": 54.1, "power": 89.7, "ve": 94.0}, {"rpm": 11900, "torque": 53.4, "power": 89.2, "ve": 93.0}, {"rpm": 12000, "torque": 52.8, "power": 89.0, "ve": 92.0}],
+          Design2: [{"rpm": 1000, "torque": 29.8, "power": 4.2, "ve": 67.5}, {"rpm": 1100, "torque": 28.5, "power": 4.4, "ve": 62.0}, {"rpm": 1200, "torque": 29.6, "power": 5.0, "ve": 63.0}, {"rpm": 1300, "torque": 31.0, "power": 5.7, "ve": 64.6}, {"rpm": 1400, "torque": 36.0, "power": 7.1, "ve": 74.1}, {"rpm": 1500, "torque": 40.1, "power": 8.5, "ve": 83.5}, {"rpm": 1600, "torque": 34.9, "power": 7.8, "ve": 68.9}, {"rpm": 1700, "torque": 30.0, "power": 7.2, "ve": 58.7}, {"rpm": 1800, "torque": 25.5, "power": 6.4, "ve": 49.8}, {"rpm": 1900, "torque": 22.4, "power": 6.0, "ve": 43.8}, {"rpm": 2000, "torque": 23.0, "power": 6.5, "ve": 44.5}, {"rpm": 2100, "torque": 26.2, "power": 7.7, "ve": 49.7}, {"rpm": 2200, "torque": 30.4, "power": 9.4, "ve": 56.6}, {"rpm": 2300, "torque": 32.3, "power": 10.4, "ve": 59.4}, {"rpm": 2400, "torque": 34.7, "power": 11.7, "ve": 62.8}, {"rpm": 2500, "torque": 36.9, "power": 13.0, "ve": 66.2}, {"rpm": 2600, "torque": 41.3, "power": 15.1, "ve": 73.3}, {"rpm": 2700, "torque": 46.0, "power": 17.4, "ve": 81.9}, {"rpm": 2800, "torque": 47.5, "power": 18.7, "ve": 84.3}, {"rpm": 2900, "torque": 46.5, "power": 18.9, "ve": 80.8}, {"rpm": 3000, "torque": 47.6, "power": 20.1, "ve": 83.0}, {"rpm": 3100, "torque": 49.6, "power": 21.6, "ve": 86.8}, {"rpm": 3200, "torque": 50.0, "power": 22.5, "ve": 87.0}, {"rpm": 3300, "torque": 49.0, "power": 22.7, "ve": 84.9}, {"rpm": 3400, "torque": 49.2, "power": 23.5, "ve": 85.8}, {"rpm": 3500, "torque": 49.5, "power": 24.3, "ve": 85.8}, {"rpm": 3600, "torque": 49.7, "power": 25.1, "ve": 85.1}, {"rpm": 3700, "torque": 50.5, "power": 26.2, "ve": 85.7}, {"rpm": 3800, "torque": 50.9, "power": 27.2, "ve": 85.5}, {"rpm": 3900, "torque": 51.4, "power": 28.2, "ve": 85.9}, {"rpm": 4000, "torque": 52.3, "power": 29.4, "ve": 87.1}, {"rpm": 4050, "torque": 52.4, "power": 29.8, "ve": 87.2}, {"rpm": 4100, "torque": 52.2, "power": 30.1, "ve": 86.9}, {"rpm": 4150, "torque": 51.9, "power": 30.3, "ve": 86.4}, {"rpm": 4200, "torque": 51.4, "power": 30.3, "ve": 85.3}, {"rpm": 4250, "torque": 50.6, "power": 30.2, "ve": 83.9}, {"rpm": 4300, "torque": 49.6, "power": 29.9, "ve": 82.4}, {"rpm": 4350, "torque": 48.7, "power": 29.7, "ve": 80.9}, {"rpm": 4400, "torque": 47.8, "power": 29.6, "ve": 79.4}, {"rpm": 4450, "torque": 47.2, "power": 29.5, "ve": 78.3}, {"rpm": 4500, "torque": 46.1, "power": 29.1, "ve": 76.4}, {"rpm": 4550, "torque": 45.6, "power": 29.1, "ve": 75.6}, {"rpm": 4600, "torque": 44.7, "power": 28.9, "ve": 74.2}, {"rpm": 4650, "torque": 43.1, "power": 28.1, "ve": 71.9}, {"rpm": 4700, "torque": 43.0, "power": 28.4, "ve": 71.7}, {"rpm": 4750, "torque": 43.0, "power": 28.7, "ve": 71.7}, {"rpm": 4800, "torque": 43.2, "power": 29.1, "ve": 71.9}, {"rpm": 4850, "torque": 43.6, "power": 29.7, "ve": 72.4}, {"rpm": 4900, "torque": 44.1, "power": 30.3, "ve": 73.2}, {"rpm": 4950, "torque": 44.9, "power": 31.2, "ve": 74.3}, {"rpm": 5000, "torque": 45.8, "power": 32.1, "ve": 75.5}, {"rpm": 5100, "torque": 48.1, "power": 34.5, "ve": 79.0}, {"rpm": 5200, "torque": 50.7, "power": 37.0, "ve": 83.0}, {"rpm": 5300, "torque": 53.1, "power": 39.5, "ve": 86.7}, {"rpm": 5400, "torque": 54.7, "power": 41.5, "ve": 89.2}, {"rpm": 5500, "torque": 56.1, "power": 43.4, "ve": 91.1}, {"rpm": 5600, "torque": 57.1, "power": 44.9, "ve": 92.8}, {"rpm": 5700, "torque": 57.8, "power": 46.3, "ve": 94.0}, {"rpm": 5800, "torque": 58.3, "power": 47.5, "ve": 94.9}, {"rpm": 5900, "torque": 58.9, "power": 48.8, "ve": 96.4}, {"rpm": 6000, "torque": 59.8, "power": 50.4, "ve": 98.5}, {"rpm": 6100, "torque": 60.8, "power": 52.1, "ve": 101.0}, {"rpm": 6200, "torque": 61.8, "power": 53.8, "ve": 103.5}, {"rpm": 6300, "torque": 62.7, "power": 55.4, "ve": 105.8}, {"rpm": 6400, "torque": 63.3, "power": 56.9, "ve": 107.6}, {"rpm": 6500, "torque": 64.1, "power": 58.5, "ve": 109.6}, {"rpm": 6600, "torque": 64.9, "power": 60.1, "ve": 111.4}, {"rpm": 6700, "torque": 65.6, "power": 61.7, "ve": 113.0}, {"rpm": 6800, "torque": 66.3, "power": 63.3, "ve": 114.4}, {"rpm": 6900, "torque": 66.8, "power": 64.8, "ve": 115.3}, {"rpm": 7000, "torque": 67.3, "power": 66.2, "ve": 115.6}, {"rpm": 7100, "torque": 67.7, "power": 67.5, "ve": 115.5}, {"rpm": 7200, "torque": 67.9, "power": 68.7, "ve": 115.0}, {"rpm": 7300, "torque": 68.0, "power": 69.7, "ve": 114.3}, {"rpm": 7400, "torque": 68.0, "power": 70.7, "ve": 113.8}, {"rpm": 7500, "torque": 68.0, "power": 71.6, "ve": 113.5}, {"rpm": 7600, "torque": 67.7, "power": 72.3, "ve": 113.2}, {"rpm": 7700, "torque": 67.4, "power": 72.9, "ve": 113.0}, {"rpm": 7800, "torque": 67.0, "power": 73.4, "ve": 112.7}, {"rpm": 7900, "torque": 66.6, "power": 73.9, "ve": 112.2}, {"rpm": 8000, "torque": 66.2, "power": 74.4, "ve": 111.4}, {"rpm": 8100, "torque": 65.7, "power": 74.7, "ve": 110.1}, {"rpm": 8200, "torque": 65.1, "power": 75.0, "ve": 108.4}, {"rpm": 8300, "torque": 64.7, "power": 75.5, "ve": 107.0}, {"rpm": 8400, "torque": 64.4, "power": 76.0, "ve": 105.9}, {"rpm": 8500, "torque": 64.2, "power": 76.6, "ve": 104.9}, {"rpm": 8600, "torque": 63.9, "power": 77.1, "ve": 104.1}, {"rpm": 8700, "torque": 63.5, "power": 77.6, "ve": 103.2}, {"rpm": 8800, "torque": 63.2, "power": 78.0, "ve": 102.3}, {"rpm": 8900, "torque": 62.8, "power": 78.5, "ve": 101.6}, {"rpm": 9000, "torque": 62.2, "power": 78.6, "ve": 100.4}, {"rpm": 9100, "torque": 61.5, "power": 78.6, "ve": 99.3}, {"rpm": 9200, "torque": 60.7, "power": 78.4, "ve": 98.2}, {"rpm": 9300, "torque": 60.1, "power": 78.5, "ve": 97.2}, {"rpm": 9400, "torque": 59.5, "power": 78.6, "ve": 96.5}, {"rpm": 9500, "torque": 59.1, "power": 78.8, "ve": 95.9}, {"rpm": 9600, "torque": 58.7, "power": 79.2, "ve": 95.4}, {"rpm": 9700, "torque": 58.3, "power": 79.5, "ve": 95.0}, {"rpm": 9800, "torque": 58.0, "power": 79.8, "ve": 94.6}, {"rpm": 9900, "torque": 57.5, "power": 79.9, "ve": 94.0}, {"rpm": 10000, "torque": 57.0, "power": 80.0, "ve": 93.3}, {"rpm": 10100, "torque": 56.5, "power": 80.1, "ve": 92.6}, {"rpm": 10200, "torque": 55.8, "power": 79.9, "ve": 91.8}, {"rpm": 10300, "torque": 55.1, "power": 79.7, "ve": 90.9}, {"rpm": 10400, "torque": 54.4, "power": 79.5, "ve": 90.0}, {"rpm": 10500, "torque": 53.9, "power": 79.4, "ve": 89.3}, {"rpm": 10600, "torque": 53.4, "power": 79.5, "ve": 88.8}, {"rpm": 10700, "torque": 53.1, "power": 79.8, "ve": 88.4}, {"rpm": 10800, "torque": 52.8, "power": 80.1, "ve": 88.1}, {"rpm": 10900, "torque": 52.7, "power": 80.6, "ve": 88.0}, {"rpm": 11000, "torque": 52.6, "power": 81.3, "ve": 88.0}, {"rpm": 11100, "torque": 52.6, "power": 81.9, "ve": 88.0}, {"rpm": 11200, "torque": 52.7, "power": 82.9, "ve": 88.3}, {"rpm": 11300, "torque": 52.9, "power": 83.9, "ve": 88.6}, {"rpm": 11400, "torque": 52.5, "power": 84.1, "ve": 88.3}, {"rpm": 11500, "torque": 52.4, "power": 84.6, "ve": 88.3}, {"rpm": 11600, "torque": 52.3, "power": 85.1, "ve": 88.2}, {"rpm": 11700, "torque": 52.0, "power": 85.4, "ve": 87.9}, {"rpm": 11800, "torque": 51.8, "power": 85.8, "ve": 87.7}, {"rpm": 11900, "torque": 51.5, "power": 86.1, "ve": 87.4}, {"rpm": 12000, "torque": 51.1, "power": 86.1, "ve": 87.2}],
+          Design3: [{"rpm": 1000, "torque": 29.2, "power": 4.1, "ve": 65.9}, {"rpm": 1100, "torque": 29.6, "power": 4.6, "ve": 64.3}, {"rpm": 1200, "torque": 31.2, "power": 5.3, "ve": 66.5}, {"rpm": 1300, "torque": 33.2, "power": 6.1, "ve": 69.6}, {"rpm": 1400, "torque": 36.7, "power": 7.2, "ve": 75.6}, {"rpm": 1500, "torque": 34.3, "power": 7.2, "ve": 69.0}, {"rpm": 1600, "torque": 28.2, "power": 6.3, "ve": 56.2}, {"rpm": 1700, "torque": 23.9, "power": 5.7, "ve": 47.6}, {"rpm": 1800, "torque": 21.2, "power": 5.4, "ve": 42.1}, {"rpm": 1900, "torque": 20.9, "power": 5.6, "ve": 41.0}, {"rpm": 2000, "torque": 22.3, "power": 6.3, "ve": 43.2}, {"rpm": 2100, "torque": 25.7, "power": 7.6, "ve": 48.8}, {"rpm": 2200, "torque": 30.2, "power": 9.3, "ve": 56.3}, {"rpm": 2300, "torque": 32.6, "power": 10.5, "ve": 59.8}, {"rpm": 2400, "torque": 35.3, "power": 11.9, "ve": 64.1}, {"rpm": 2500, "torque": 37.7, "power": 13.2, "ve": 67.7}, {"rpm": 2600, "torque": 41.2, "power": 15.0, "ve": 73.3}, {"rpm": 2700, "torque": 45.9, "power": 17.4, "ve": 81.9}, {"rpm": 2800, "torque": 47.7, "power": 18.7, "ve": 85.1}, {"rpm": 2900, "torque": 46.9, "power": 19.1, "ve": 82.0}, {"rpm": 3000, "torque": 48.0, "power": 20.2, "ve": 84.0}, {"rpm": 3100, "torque": 49.7, "power": 21.6, "ve": 87.1}, {"rpm": 3200, "torque": 50.1, "power": 22.5, "ve": 87.2}, {"rpm": 3300, "torque": 48.8, "power": 22.6, "ve": 84.6}, {"rpm": 3400, "torque": 48.9, "power": 23.4, "ve": 85.3}, {"rpm": 3500, "torque": 49.3, "power": 24.2, "ve": 86.0}, {"rpm": 3600, "torque": 49.7, "power": 25.1, "ve": 85.3}, {"rpm": 3700, "torque": 50.5, "power": 26.3, "ve": 85.8}, {"rpm": 3800, "torque": 51.0, "power": 27.2, "ve": 85.7}, {"rpm": 3900, "torque": 51.9, "power": 28.4, "ve": 86.7}, {"rpm": 4000, "torque": 52.9, "power": 29.7, "ve": 88.1}, {"rpm": 4050, "torque": 52.6, "power": 29.9, "ve": 87.6}, {"rpm": 4100, "torque": 52.3, "power": 30.1, "ve": 87.0}, {"rpm": 4150, "torque": 51.9, "power": 30.2, "ve": 86.2}, {"rpm": 4200, "torque": 51.4, "power": 30.3, "ve": 85.3}, {"rpm": 4250, "torque": 50.6, "power": 30.2, "ve": 83.9}, {"rpm": 4300, "torque": 49.7, "power": 30.0, "ve": 82.5}, {"rpm": 4350, "torque": 48.7, "power": 29.7, "ve": 80.9}, {"rpm": 4400, "torque": 47.7, "power": 29.5, "ve": 79.2}, {"rpm": 4450, "torque": 46.9, "power": 29.3, "ve": 77.9}, {"rpm": 4500, "torque": 46.3, "power": 29.3, "ve": 76.9}, {"rpm": 4550, "torque": 45.6, "power": 29.2, "ve": 75.7}, {"rpm": 4600, "torque": 44.9, "power": 29.0, "ve": 74.6}, {"rpm": 4650, "torque": 43.2, "power": 28.2, "ve": 72.1}, {"rpm": 4700, "torque": 43.3, "power": 28.6, "ve": 72.1}, {"rpm": 4750, "torque": 43.5, "power": 29.0, "ve": 72.5}, {"rpm": 4800, "torque": 43.8, "power": 29.5, "ve": 72.8}, {"rpm": 4850, "torque": 44.3, "power": 30.1, "ve": 73.4}, {"rpm": 4900, "torque": 44.7, "power": 30.8, "ve": 74.1}, {"rpm": 4950, "torque": 45.3, "power": 31.5, "ve": 74.9}, {"rpm": 5000, "torque": 46.0, "power": 32.3, "ve": 76.0}, {"rpm": 5100, "torque": 48.0, "power": 34.4, "ve": 78.8}, {"rpm": 5200, "torque": 50.6, "power": 37.0, "ve": 83.0}, {"rpm": 5300, "torque": 53.3, "power": 39.7, "ve": 87.2}, {"rpm": 5400, "torque": 55.6, "power": 42.2, "ve": 90.9}, {"rpm": 5500, "torque": 57.4, "power": 44.4, "ve": 94.1}, {"rpm": 5600, "torque": 58.5, "power": 46.0, "ve": 96.1}, {"rpm": 5700, "torque": 58.7, "power": 47.0, "ve": 96.7}, {"rpm": 5800, "torque": 58.9, "power": 48.0, "ve": 97.2}, {"rpm": 5900, "torque": 59.3, "power": 49.1, "ve": 97.8}, {"rpm": 6000, "torque": 60.0, "power": 50.5, "ve": 99.2}, {"rpm": 6100, "torque": 60.9, "power": 52.2, "ve": 101.1}, {"rpm": 6200, "torque": 61.9, "power": 53.9, "ve": 103.2}, {"rpm": 6300, "torque": 62.7, "power": 55.5, "ve": 105.4}, {"rpm": 6400, "torque": 63.3, "power": 56.9, "ve": 107.2}, {"rpm": 6500, "torque": 64.0, "power": 58.5, "ve": 109.1}, {"rpm": 6600, "torque": 64.8, "power": 60.0, "ve": 110.8}, {"rpm": 6700, "torque": 65.5, "power": 61.6, "ve": 112.5}, {"rpm": 6800, "torque": 66.1, "power": 63.1, "ve": 113.8}, {"rpm": 6900, "torque": 66.8, "power": 64.7, "ve": 114.8}, {"rpm": 7000, "torque": 67.2, "power": 66.1, "ve": 115.2}, {"rpm": 7100, "torque": 67.6, "power": 67.4, "ve": 115.2}, {"rpm": 7200, "torque": 67.8, "power": 68.5, "ve": 114.6}, {"rpm": 7300, "torque": 67.9, "power": 69.6, "ve": 114.0}, {"rpm": 7400, "torque": 67.9, "power": 70.6, "ve": 113.5}, {"rpm": 7500, "torque": 67.8, "power": 71.4, "ve": 113.1}, {"rpm": 7600, "torque": 67.6, "power": 72.1, "ve": 112.9}, {"rpm": 7700, "torque": 67.3, "power": 72.8, "ve": 112.8}, {"rpm": 7800, "torque": 66.9, "power": 73.3, "ve": 112.6}, {"rpm": 7900, "torque": 66.5, "power": 73.8, "ve": 112.1}, {"rpm": 8000, "torque": 66.1, "power": 74.2, "ve": 111.3}, {"rpm": 8100, "torque": 65.6, "power": 74.7, "ve": 110.3}, {"rpm": 8200, "torque": 65.2, "power": 75.0, "ve": 109.2}, {"rpm": 8300, "torque": 64.8, "power": 75.5, "ve": 108.1}, {"rpm": 8400, "torque": 64.5, "power": 76.1, "ve": 107.0}, {"rpm": 8500, "torque": 64.2, "power": 76.7, "ve": 105.9}, {"rpm": 8600, "torque": 63.9, "power": 77.2, "ve": 104.8}, {"rpm": 8700, "torque": 63.5, "power": 77.5, "ve": 103.5}, {"rpm": 8800, "torque": 62.9, "power": 77.7, "ve": 102.2}, {"rpm": 8900, "torque": 62.2, "power": 77.7, "ve": 100.9}, {"rpm": 9000, "torque": 61.5, "power": 77.8, "ve": 99.7}, {"rpm": 9100, "torque": 60.8, "power": 77.7, "ve": 98.4}, {"rpm": 9200, "torque": 60.1, "power": 77.6, "ve": 97.4}, {"rpm": 9300, "torque": 59.3, "power": 77.4, "ve": 96.4}, {"rpm": 9400, "torque": 58.7, "power": 77.5, "ve": 95.6}, {"rpm": 9500, "torque": 58.2, "power": 77.7, "ve": 94.9}, {"rpm": 9600, "torque": 57.9, "power": 78.1, "ve": 94.5}, {"rpm": 9700, "torque": 57.5, "power": 78.3, "ve": 94.0}, {"rpm": 9800, "torque": 57.0, "power": 78.4, "ve": 93.4}, {"rpm": 9900, "torque": 56.5, "power": 78.5, "ve": 92.7}, {"rpm": 10000, "torque": 55.8, "power": 78.4, "ve": 91.9}, {"rpm": 10100, "torque": 55.1, "power": 78.2, "ve": 91.0}, {"rpm": 10200, "torque": 54.5, "power": 78.1, "ve": 90.2}, {"rpm": 10300, "torque": 53.8, "power": 77.8, "ve": 89.3}, {"rpm": 10400, "torque": 53.1, "power": 77.6, "ve": 88.4}, {"rpm": 10500, "torque": 52.5, "power": 77.3, "ve": 87.5}, {"rpm": 10600, "torque": 51.8, "power": 77.1, "ve": 86.7}, {"rpm": 10700, "torque": 51.3, "power": 77.1, "ve": 86.0}, {"rpm": 10800, "torque": 50.9, "power": 77.1, "ve": 85.4}, {"rpm": 10900, "torque": 50.5, "power": 77.3, "ve": 85.0}, {"rpm": 11000, "torque": 50.3, "power": 77.7, "ve": 84.8}, {"rpm": 11100, "torque": 50.3, "power": 78.4, "ve": 84.9}, {"rpm": 11200, "torque": 50.3, "power": 79.1, "ve": 84.9}, {"rpm": 11300, "torque": 50.5, "power": 80.1, "ve": 85.2}, {"rpm": 11400, "torque": 50.4, "power": 80.7, "ve": 85.2}, {"rpm": 11500, "torque": 50.4, "power": 81.4, "ve": 85.3}, {"rpm": 11600, "torque": 50.4, "power": 82.1, "ve": 85.4}, {"rpm": 11700, "torque": 50.3, "power": 82.7, "ve": 85.5}, {"rpm": 11800, "torque": 50.2, "power": 83.3, "ve": 85.4}, {"rpm": 11900, "torque": 50.1, "power": 83.7, "ve": 85.3}, {"rpm": 12000, "torque": 49.9, "power": 84.1, "ve": 85.3}],
+        };
+
+        // Data Calculation Helpers
+        const calculateAUC = (data, minRpm, maxRpm) => {
+            const rangeData = data.filter(d => d.rpm >= minRpm && d.rpm <= maxRpm);
+            let auc = 0;
+            for (let i = 0; i < rangeData.length - 1; i++) {
+                const rpmDiff = rangeData[i+1].rpm - rangeData[i].rpm;
+                const avgTorque = (rangeData[i].torque + rangeData[i+1].torque) / 2;
+                auc += (avgTorque * rpmDiff);
+            }
+            return Math.round(auc).toLocaleString(); 
+        };
+
+        const calculateTargetAvg = (data, minRpm, maxRpm) => {
+            const targetData = data.filter(d => d.rpm >= 4500 && d.rpm <= 5000 && d.rpm >= minRpm && d.rpm <= maxRpm);
+            if(targetData.length === 0) return "N/A";
+            const sum = targetData.reduce((acc, val) => acc + val.torque, 0);
+            return (sum / targetData.length).toFixed(1) + ' Nm';
+        };
+
+        const getPeak = (data, key, minRpm, maxRpm) => {
+            const rangeData = data.filter(d => d.rpm >= minRpm && d.rpm <= maxRpm);
+            if(rangeData.length === 0) return "N/A";
+            const peak = rangeData.reduce((max, d) => d[key] > max[key] ? d : max, rangeData[0]);
+            return `${peak[key].toFixed(1)} ${key === 'torque' ? 'Nm' : 'HP'} @ ${peak.rpm}`;
+        };
+
+        // Chart References
+        let torqueChart, powerChart, veChart;
+
+        const updateDashboard = () => {
+            let minRpm = parseInt(document.getElementById('min-rpm').value);
+            let maxRpm = parseInt(document.getElementById('max-rpm').value);
+            
+            if(minRpm > maxRpm) {
+               [minRpm, maxRpm] = [maxRpm, minRpm];
+               document.getElementById('min-rpm').value = minRpm;
+               document.getElementById('max-rpm').value = maxRpm;
+            }
+            
+            document.getElementById('min-rpm-val').innerText = minRpm;
+            document.getElementById('max-rpm-val').innerText = maxRpm;
+
+            // Populate Dashboard Values
+            document.getElementById('d1-avg').innerText = calculateTargetAvg(simData.Design1, minRpm, maxRpm);
+            document.getElementById('d2-avg').innerText = calculateTargetAvg(simData.Design2, minRpm, maxRpm);
+            document.getElementById('d3-avg').innerText = calculateTargetAvg(simData.Design3, minRpm, maxRpm);
+
+            document.getElementById('d1-auc').innerText = calculateAUC(simData.Design1, minRpm, maxRpm);
+            document.getElementById('d2-auc').innerText = calculateAUC(simData.Design2, minRpm, maxRpm);
+            document.getElementById('d3-auc').innerText = calculateAUC(simData.Design3, minRpm, maxRpm);
+
+            document.getElementById('d1-pt').innerText = getPeak(simData.Design1, 'torque', minRpm, maxRpm);
+            document.getElementById('d2-pt').innerText = getPeak(simData.Design2, 'torque', minRpm, maxRpm);
+            document.getElementById('d3-pt').innerText = getPeak(simData.Design3, 'torque', minRpm, maxRpm);
+
+            document.getElementById('d1-pp').innerText = getPeak(simData.Design1, 'power', minRpm, maxRpm);
+            document.getElementById('d2-pp').innerText = getPeak(simData.Design2, 'power', minRpm, maxRpm);
+            document.getElementById('d3-pp').innerText = getPeak(simData.Design3, 'power', minRpm, maxRpm);
+
+            // Update Charts
+            const rangeFilter = (d) => d.rpm >= minRpm && d.rpm <= maxRpm && d.rpm % 200 === 0;
+            const labels = simData.Design1.filter(rangeFilter).map(d => d.rpm);
+            const mapData = (data, key) => data.filter(rangeFilter).map(d => d[key]);
+
+            const updateChartData = (chart, key) => {
+                chart.data.labels = labels;
+                chart.data.datasets[0].data = mapData(simData.Design1, key);
+                chart.data.datasets[1].data = mapData(simData.Design2, key);
+                chart.data.datasets[2].data = mapData(simData.Design3, key);
+                chart.update();
+            };
+
+            updateChartData(torqueChart, 'torque');
+            updateChartData(powerChart, 'power');
+            updateChartData(veChart, 've');
+        };
+
+        const initCharts = () => {
+            const chartConfig = {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    x: { title: { display: true, text: 'Engine Speed (RPM)', color: '#94a3b8' }, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                },
+                plugins: { legend: { labels: { color: '#f8fafc', usePointStyle: true, boxWidth: 8 } } }
+            };
+
+            torqueChart = new Chart(document.getElementById('torqueChart'), {
+                type: 'line',
+                data: { labels: [], datasets: [
+                    { label: 'Design 1', data: [], borderColor: '#38bdf8', borderWidth: 2, tension: 0.3 },
+                    { label: 'Design 2', data: [], borderColor: '#fb923c', borderWidth: 2, tension: 0.3 },
+                    { label: 'Design 3', data: [], borderColor: '#a78bfa', borderWidth: 2, tension: 0.3 }
+                ]},
+                options: { ...chartConfig, plugins: { ...chartConfig.plugins, title: { display: true, text: 'Brake Torque (Nm)', color: '#f8fafc', font: { size: 16 } } }, scales: { ...chartConfig.scales, y: { ...chartConfig.scales.y, title: { display: true, text: 'Torque (Nm)', color: '#94a3b8' } } } }
+            });
+
+            powerChart = new Chart(document.getElementById('powerChart'), {
+                type: 'line',
+                data: { labels: [], datasets: [
+                    { label: 'Design 1', data: [], borderColor: '#38bdf8', borderWidth: 2, tension: 0.3 },
+                    { label: 'Design 2', data: [], borderColor: '#fb923c', borderWidth: 2, tension: 0.3 },
+                    { label: 'Design 3', data: [], borderColor: '#a78bfa', borderWidth: 2, tension: 0.3 }
+                ]},
+                options: { ...chartConfig, plugins: { ...chartConfig.plugins, title: { display: true, text: 'Brake Power (HP)', color: '#f8fafc', font: { size: 16 } } }, scales: { ...chartConfig.scales, y: { ...chartConfig.scales.y, title: { display: true, text: 'Power (HP)', color: '#94a3b8' } } } }
+            });
+
+            veChart = new Chart(document.getElementById('veChart'), {
+                type: 'line',
+                data: { labels: [], datasets: [
+                    { label: 'Design 1', data: [], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.05)', fill: true, borderWidth: 2, tension: 0.3 },
+                    { label: 'Design 2', data: [], borderColor: '#fb923c', backgroundColor: 'rgba(251, 146, 60, 0.05)', fill: true, borderWidth: 2, tension: 0.3 },
+                    { label: 'Design 3', data: [], borderColor: '#a78bfa', backgroundColor: 'rgba(167, 139, 250, 0.05)', fill: true, borderWidth: 2, tension: 0.3 }
+                ]},
+                options: { ...chartConfig, plugins: { ...chartConfig.plugins, title: { display: true, text: 'Volumetric Efficiency (%)', color: '#f8fafc', font: { size: 16 } } }, scales: { ...chartConfig.scales, y: { ...chartConfig.scales.y, title: { display: true, text: 'VE (%)', color: '#94a3b8' } } } }
+            });
+        };
+
+        // Event Listeners
+        document.getElementById('min-rpm').addEventListener('input', updateDashboard);
+        document.getElementById('max-rpm').addEventListener('input', updateDashboard);
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            document.getElementById('min-rpm').value = 1000;
+            document.getElementById('max-rpm').value = 12000;
+            updateDashboard();
+        });
+
+        // Initialize
+        initCharts();
+        updateDashboard();
+
+    </script>
+</body>
+</html>
