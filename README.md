@@ -90,11 +90,67 @@
 </table>
 </details>
 
-### ⚙️ Upcoming Validations
+<details>
+<summary><b>🏗️ Structural Analysis</b> <i>(Click to Expand)</i></summary>
 
-* **Structural FEA:** *Stress and fatigue analysis on the engine mounting flanges and chassis hangers. (Data coming soon).*
+<table>
+<tr>
+<td align="center"><b>Equivalent Stress Front</b>
 
-* **Thermal FEA:** *Heat radiation mapping to validate our 1-inch chassis clearance rules. (Data coming soon).*
+<img src="Structual/EquivalentStreeFront.png" width="100%"/></td>
+<td align="center"><b>Equivalent Stress Back</b>
+
+<img src="Structual/EquivalentStressBack.png" width="100%"/></td>
+</tr>
+<tr>
+<td align="center"><b>Safety Factor Front</b>
+
+<img src="Structual/SafetyFactorFront.png" width="100%"/></td>
+<td align="center"><b>Safety Factor Back</b>
+
+<img src="Structual/SafetyFactorBack.png" width="100%"/></td>
+</tr>
+<tr>
+<td align="center"><b>Total Deformation Front</b>
+
+<img src="Structual/totalDeformationFront.png" width="100%"/></td>
+<td align="center"><b>Total Deformation Back</b>
+
+<img src="Structual/TotalDeformationBack.png" width="100%"/></td>
+</tr>
+</table>
+</details>
+
+<details>
+<summary><b>🔥 Thermal Analysis</b> <i>(Click to Expand)</i></summary>
+
+<table>
+<tr>
+<td align="center"><b>Heat Flux Front</b>
+
+<img src="Thermal/HeatFluxFront.png" width="100%"/></td>
+<td align="center"><b>Heat Flux Back</b>
+
+<img src="Thermal/HeatFluxBack.png" width="100%"/></td>
+</tr>
+<tr>
+<td align="center"><b>Temperature Front</b>
+
+<img src="Thermal/TempFront.png" width="100%"/></td>
+<td align="center"><b>Temperature Back</b>
+
+<img src="Thermal/Temp%20Back.png" width="100%"/></td>
+</tr>
+<tr>
+<td align="center"><b>Thermal Error Front</b>
+
+<img src="Thermal/ThermalErrorFront.png" width="100%"/></td>
+<td align="center"><b>Thermal Error Back</b>
+
+<img src="Thermal/ThermalErrorBack.png" width="100%"/></td>
+</tr>
+</table>
+</details>
 
 <hr>
 <p align="center"><i>University of Illinois Chicago (UIC) • MIE 397 Senior Design Expo</i></p>
