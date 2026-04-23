@@ -10,6 +10,41 @@
 
 | [**Jacob Schifrin**](https://www.linkedin.com/in/jacobschifrin) | [**Aiden Avalos**](https://www.linkedin.com/in/aiden-avalos-279285220/) | [**Michal Potok**](https://www.linkedin.com/in/michal-potok-86bb84227/) | [**Eduardo Escobar**](https://www.linkedin.com/in/eduardo-escobar-1469ba21a/) | [**Thomas Dicke**](https://www.linkedin.com/in/thomas-dicke-93599524b/) |
 
+## ⚙️ 1D Simulation Model Setup (Ricardo WAVE)
+
+*The foundation of the exhaust design relies on a complete one-dimensional acoustic and thermodynamic model of the Honda CBR600 engine. The following diagrams detail the specific system components and boundary conditions configured prior to optimization.*
+
+<details open>
+<summary><b>🛠️ Full Engine Topology</b> <i>(Click to Collapse)</i></summary>
+
+<p align="center">
+<img src="Model Screenshots/Figure 3 Complete Ricardo WAVE 1D engine topology including custom intake restrictor, 4-2-1 exhaust routing, and simulated muffler..png" width="90%"/>
+<br><i>Complete 1D engine topology mapping the intake restrictor, engine block, 4-2-1 exhaust routing, and simulated muffler.</i>
+</p>
+
+</details>
+
+<details>
+<summary><b>🔍 Sub-System Configurations</b> <i>(Click to Expand)</i></summary>
+
+<table>
+<tr>
+<td align="center"><b>Intake & ITB Flow</b><br>
+<img src="Model Screenshots/Figure 4 Intake restrictor and equivalent ITB flow area approximation within the 1D model..png" width="100%"/><br>
+<i>Intake restrictor and equivalent individual throttle body (ITB) flow area approximation.</i></td>
+
+<td align="center"><b>Exhaust Collectors</b><br>
+<img src="Model Screenshots/Figure 5 Exhaust 4-2-1 primary pipe pairing and collector junction topology..png" width="100%"/><br>
+<i>Exhaust 4-2-1 primary pipe pairing and collector junction topology.</i></td>
+
+<td align="center"><b>Muffler Capacitance</b><br>
+<img src="Model Screenshots/Figure 6 Helmholtz resonator geometry simulating physical muffler capacitance and flow resistance..png" width="100%"/><br>
+<i>Helmholtz resonator geometry simulating physical muffler capacitance and flow resistance.</i></td>
+</tr>
+</table>
+
+</details>
+
 ## 📊 Interactive Telemetry Dashboards
 
 *Experience our data live. Tap the links below to interact with the 3D models and custom charting tools.*
